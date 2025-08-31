@@ -168,6 +168,43 @@ const SUPPLIERS = [
   },
 ];
 
+const ORDERS = [
+  {
+    id: 9283746528193746,
+    date: "2025-08-20",
+    progress: 45,
+    total: 220,
+    items: [
+      { id: "p1", name: "Thermal Labels 100×150mm", price: 2.5, unit: "EGP/pc", qty: 50, total: 125 },
+      { id: "p2", name: "Shipping Flyers A4", price: 1.2, unit: "EGP/pc", qty: 80, total: 95 }
+    ]
+  },
+  {
+    id: 5647382918374659,
+    date: "2025-08-15",
+    progress: 80,
+    total: 210,
+    items: [
+      { id: "p3", name: "Business Cards (Matte)", price: 0.9, unit: "EGP/pc", qty: 150, total: 135 },
+      { id: "p4", name: "Stickers 70×70mm", price: 0.6, unit: "EGP/pc", qty: 125, total: 75 }
+    ]
+  },
+  {
+    id: 8374651928374623,
+    date: "2025-08-10",
+    progress: 100,
+    total: 395,
+    items: [
+      { id: "p5", name: "Kraft Boxes (Small)", price: 6.5, unit: "EGP/pc", qty: 50, total: 325 },
+      { id: "p6", name: "Paper Filler 1kg", price: 75, unit: "EGP/kg", qty: 1, total: 75 }
+    ]
+  }
+];
+
+const LIKERT = ["Very Dissatisfied", "Dissatisfied", "Neutral", "Satisfied", "Very Satisfied"]
+
+
+
 /* =======================
    Supplier Card & Modal
 ======================= */
@@ -256,6 +293,153 @@ const SupplierModal = ({ supplier, show, onHide, onAdd, onSample }) => {
     </Modal>
   );
 };
+
+
+/* =======================
+   Order Card & Modal
+======================= */
+
+const OrderCard = ({ order, onView }) => (
+  <Card className="card-soft order-card h-100">
+    <Card.Body>
+      <div className="d-flex align-items-start gap-3">
+        <div className="rounded-3 d-flex align-items-center justify-content-center" style={{ width:48, height:48, background:"var(--brand-light)" }}>
+          <i className="bi bi-receipt" />
+        </div>
+        <div className="flex-grow-1">
+          <div className="d-flex align-items-center justify-content-between mb-2">
+            <h5 className="mb-0">Order #{order.id}</h5>
+          </div>
+          <div className="mb-3">
+            <Button onClick={() => onView(order)} className="btn-soft" style={{ background:"var(--brand)", borderColor:"var(--brand)" }}>
+              <i className="bi bi-eye me-1"/> View Details
+            </Button>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            <i className="bi bi-scooter fs-5 text-muted" />
+            <div className="flex-grow-1">
+              <div className="progress" style={{ height:8, borderRadius:4 }}>
+              <div 
+                  className={`progress-bar${order.progress === 100 ? " bg-success" : ""}`} 
+                  role="progressbar" 
+                  style={{ width:`${order.progress}%` }}>
+                </div>
+              </div>
+            </div>
+            <i className="bi bi-box-seam fs-5 text-muted" />
+          </div>
+        </div>
+      </div>
+    </Card.Body>
+  </Card>
+);
+
+const OrderModal = ({ order, show, onHide }) => {
+  const [review, setReview] = useState(null);
+  const [notes, setNotes] = useState("")
+  if (!order) return null;
+
+  return (
+    <Modal show={show} onHide={onHide} size="lg" centered>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          Order #{order.id} <span className="ms-2 label-muted fw-normal">{order.date}</span>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="mb-3 d-flex align-items-center gap-2">
+          <i className="bi bi-scooter fs-5 text-muted" />
+          <div className="flex-grow-1">
+            <div className="progress" style={{ height:8, borderRadius:4 }}>
+            <div 
+                  className={`progress-bar${order.progress === 100 ? " bg-success" : ""}`} 
+                  role="progressbar" 
+                  style={{ width:`${order.progress}%` }}>
+                </div>
+            </div>
+          </div>
+          <i className="bi bi-box-seam fs-5 text-muted" />
+        </div>
+
+        
+
+        <Row className="g-3">
+          {order.items.map(item => (
+            <Col md={6} key={item.id}>
+              <Card className="card-soft h-100">
+                <Card.Body>
+                  <div className="d-flex align-items-start justify-content-between">
+                    <div>
+                      <h6 className="mb-1">{item.name}</h6>
+                      <div className="label-muted">{item.price} {item.unit}</div>
+                    </div>
+                    <Badge bg="light" text="dark" className="border">SKU {item.id.toUpperCase()}</Badge>
+                  </div>
+                  <div className="mt-3 d-flex align-items-center justify-content-between">
+                    <div className="label-muted">Qty {item.qty}</div>
+                    <div className="fw-bold">{item.total} EGP</div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        {order.progress === 100 && (
+          <div className="align-items-center justify-content-between mb-3">
+            <br className="my-4" />
+            <h2 className="mb-2">Review this order</h2>
+            <hr className="my-4" />
+            <div className="d-flex justify-content-between mb-3 px-3 py-4 rounded" style={{ backgroundColor: "#f1f3f5" }}>
+              {[1,2,3,4,5].map(val => (
+                <Form.Check
+                  key={val}
+                  type="radio"
+                  name={`review-${order.id}`}
+                  label={LIKERT[val - 1]}
+                  checked={review === val}
+                  onChange={() => setReview(val)}
+                  className="fs-7 fw-semibold"
+                />
+              ))}
+            </div>
+            {review && (
+              <div>
+                <Form.Control
+                  as="textarea"
+                  rows={2}
+                  placeholder="Additional notes..."
+                  onChange={e => setNotes(e.target.value)}
+                />
+                <div className="mt-3">
+                  <Button className="btn-soft" style={{ background:"var(--brand)", borderColor:"var(--brand)" }} onClick={() => {
+                        alert("✔️ Review Submitted! This is a demo review.");
+                        setReview(null);
+                        setNotes("");
+                        onHide();
+                      }
+                    }>
+                    Submit Review
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      </Modal.Body>
+      <Modal.Footer>
+        <div className="fw-bold me-auto">Total: {order.total} EGP</div>
+        <Button variant="outline-secondary" className="btn-soft" onClick={onHide}>
+          <i className="bi bi-x-circle me-1"/> Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};
+
+
+
 
 /* =======================
    Cart Offcanvas
@@ -380,6 +564,53 @@ const MarketplacePage = ({ onAddToCart, onAddSample }) => {
   );
 };
 
+
+/* =======================
+   Orders Page – view completed orders and current order status
+======================= */
+const OrdersPage = () => {
+  const [query, setQuery] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if(!q) return SUPPLIERS;
+    return SUPPLIERS.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      s.tags.some(t => t.toLowerCase().includes(q)) ||
+      s.products.some(p => p.name.toLowerCase().includes(q))
+    );
+  }, [query]);
+
+  return (
+    <Container fluid className="py-4">
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <h4 className="mb-0">Orders</h4>
+      </div>
+
+      
+
+      <Row className="g-3">
+        {ORDERS.map(order => (
+          <Col md={6} key={order.id}>
+            <OrderCard order={order} onView={(o) => setSelectedOrder(o)} />
+          </Col>
+        ))}
+      </Row>
+
+      <OrderModal
+        order={selectedOrder}
+        show={!!selectedOrder}
+        onHide={() => setSelectedOrder(null)}
+      />
+
+      
+    </Container>
+  );
+};
+
+
 /* =======================
    App Shell
 ======================= */
@@ -423,10 +654,14 @@ export default function App(){
   // Simple route switcher – only Marketplace live for this demo
   const Page = useMemo(() => {
     switch(route){
+      case "orders":
+        return() => (
+          <OrdersPage />
+        )
       case "marketplace": default:
         return () => (
           <MarketplacePage onAddToCart={addToCart} onAddSample={addSample} />
-        );
+        )
     }
   }, [route]);
 
